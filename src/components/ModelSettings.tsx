@@ -43,27 +43,13 @@ const ModelSettings = ({
         const response = await ollama.list();
         console.log('Available models:', response.models);
         
-        // First try to find models that are explicitly vision-capable
-        let multimodalModels = response.models.filter(model => {
-          const name = model.name.toLowerCase();
-          return name.includes('vision') || 
-                 name.includes('llava') || 
-                 name.includes('bakllava') || 
-                 name.includes('clip') || 
-                 name.includes('vl') || 
-                 name.includes('gemma:vision');
-        });
+        // Show all available models
+        const availableModels = response.models;
         
-        // If no vision-specific models were found, show all models instead
-        if (multimodalModels.length === 0) {
-          console.log('No vision-specific models found, showing all models');
-          multimodalModels = response.models;
-        }
-        
-        setModels(multimodalModels.map(model => model.name));
-        if (multimodalModels.length > 0) {
-          setSelectedModel(multimodalModels[0].name);
-          onModelChange(multimodalModels[0].name);
+        setModels(availableModels.map(model => model.name));
+        if (availableModels.length > 0) {
+          setSelectedModel(availableModels[0].name);
+          onModelChange(availableModels[0].name);
         }
       } catch (error) {
         console.error("Failed to fetch models:", error);
@@ -135,7 +121,7 @@ const ModelSettings = ({
           {isLoading ? (
             <MenuItem value="">Loading models...</MenuItem>
           ) : models.length === 0 ? (
-            <MenuItem value="">No vision models found</MenuItem>
+            <MenuItem value="">No models found</MenuItem>
           ) : (
             models.map((model) => (
               <MenuItem key={model} value={model}>

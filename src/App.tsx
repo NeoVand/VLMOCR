@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Box, Typography, CssBaseline, Container, Grid, AppBar, Toolbar, Alert, Snackbar, IconButton, useMediaQuery } from '@mui/material';
+import { Box, Typography, CssBaseline, Container, Grid, AppBar, Toolbar, Alert, IconButton, useMediaQuery } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import MenuIcon from '@mui/icons-material/Menu';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
@@ -10,6 +10,7 @@ import PromptTemplate from './components/PromptTemplate';
 import ImageProcessor from './components/ImageProcessor';
 import ImageGrid from './components/ImageGrid';
 import OutputText from './components/OutputText';
+import OllamaErrorAlert from './components/OllamaErrorAlert';
 import ollamaService from './services/ollamaService';
 import { createAppTheme } from './theme';
 import './App.css';
@@ -92,6 +93,7 @@ function App() {
   
   // State for error handling
   const [error, setError] = useState<string | null>(null);
+  const [isOllamaError, setIsOllamaError] = useState<boolean>(false);
 
   // State for sidebar collapse
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
@@ -229,11 +231,13 @@ function App() {
         console.log('Ollama running status:', isRunning);
         
         if (!isRunning) {
-          setError('Ollama service is not running or cannot be reached. Please start Ollama and refresh this page.');
+          setError('Ollama service is not running or cannot be reached.');
+          setIsOllamaError(true);
         }
       } catch (error) {
         console.error('Error checking Ollama status:', error);
-        setError('Failed to connect to Ollama. Please check if Ollama is running and accessible.');
+        setError('Failed to connect to Ollama.');
+        setIsOllamaError(true);
       }
     };
     
@@ -419,6 +423,7 @@ function App() {
   // Handle error close
   const handleErrorClose = () => {
     setError(null);
+    setIsOllamaError(false);
   };
 
   // Handle text clearing
@@ -772,25 +777,35 @@ function App() {
           </Grid>
         </Container>
         
-        <Snackbar 
-          open={!!error} 
-          autoHideDuration={6000} 
-          onClose={handleErrorClose}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-          sx={{ mb: 2 }}
-        >
-          <Alert 
-            onClose={handleErrorClose} 
-            severity="error" 
-            sx={{ 
-              width: '100%',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-              borderRadius: 1,
+        {error && isOllamaError && (
+          <OllamaErrorAlert onClose={handleErrorClose} />
+        )}
+        
+        {error && !isOllamaError && (
+          <Box
+            sx={{
+              position: 'fixed',
+              bottom: 16,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 9999,
+              width: 'auto',
+              maxWidth: '90%',
             }}
           >
-            {error}
-          </Alert>
-        </Snackbar>
+            <Alert 
+              onClose={handleErrorClose} 
+              severity="error" 
+              sx={{ 
+                width: '100%',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                borderRadius: 1,
+              }}
+            >
+              {error}
+            </Alert>
+          </Box>
+        )}
       </Box>
     </ThemeProvider>
   );
