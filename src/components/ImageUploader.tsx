@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Box, Typography, Paper, Fade } from '@mui/material';
+import { Box, Typography, Paper, Fade, useTheme } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import ImageIcon from '@mui/icons-material/Image';
 
@@ -10,6 +10,7 @@ interface ImageUploaderProps {
 const ImageUploader = ({ onImageUpload }: ImageUploaderProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const theme = useTheme();
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -73,15 +74,27 @@ const ImageUploader = ({ onImageUpload }: ImageUploaderProps) => {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: isDragging ? 'rgba(245, 158, 11, 0.08)' : 'rgba(255, 255, 255, 0.03)',
+            backgroundColor: isDragging 
+              ? 'rgba(245, 158, 11, 0.08)' 
+              : theme.palette.mode === 'dark' 
+                ? 'rgba(255, 255, 255, 0.03)'
+                : 'rgba(0, 0, 0, 0.03)',
             border: '1px solid',
-            borderColor: isDragging ? 'primary.main' : 'rgba(255, 255, 255, 0.1)',
+            borderColor: isDragging 
+              ? 'primary.main' 
+              : theme.palette.mode === 'dark' 
+                ? 'rgba(255, 255, 255, 0.1)'
+                : 'rgba(0, 0, 0, 0.1)',
             cursor: 'pointer',
             borderRadius: 1,
             transition: 'all 0.2s ease-in-out',
             '&:hover': {
-              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-              boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.1)',
+              backgroundColor: theme.palette.mode === 'dark'
+                ? 'rgba(255, 255, 255, 0.05)'
+                : 'rgba(0, 0, 0, 0.05)',
+              boxShadow: theme.palette.mode === 'dark'
+                ? '0 0 0 1px rgba(255, 255, 255, 0.1)'
+                : '0 0 0 1px rgba(0, 0, 0, 0.1)',
             },
           }}
           onDragOver={handleDragOver}

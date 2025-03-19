@@ -100,7 +100,7 @@ const ModelSettings = ({
     <Box sx={{ width: '100%' }}>
       <Typography variant="subtitle2" gutterBottom sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
         <ChipIcon fontSize="small" color="primary" />
-        Model
+        Model (Vision-capable models only)
       </Typography>
       <FormControl fullWidth size="small" sx={{ mb: 3 }}>
         <Select
