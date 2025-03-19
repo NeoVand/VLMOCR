@@ -71,6 +71,9 @@ function App() {
     const handleMouseMove = (e: MouseEvent) => {
       if (!containerRef.current) return;
       
+      // Prevent default selection behavior
+      e.preventDefault();
+      
       const containerWidth = containerRef.current.clientWidth;
 
       if (isDraggingLeft) {
@@ -93,37 +96,98 @@ function App() {
         }
       }
     };
+    
+    // Touch move handler for mobile devices
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!containerRef.current || e.touches.length === 0) return;
+      
+      // Prevent default behavior (scrolling, zooming)
+      e.preventDefault();
+      
+      const touch = e.touches[0];
+      const containerWidth = containerRef.current.clientWidth;
+
+      if (isDraggingLeft) {
+        const deltaX = touch.clientX - startX;
+        const newLeftWidth = Math.max(15, Math.min(40, startLeftWidth + (deltaX / containerWidth) * 100));
+        const newMiddleWidth = startMiddleWidth - ((newLeftWidth - startLeftWidth) / 100) * 100;
+
+        if (newMiddleWidth >= 30) {
+          setLeftColumnWidth(newLeftWidth);
+          setMiddleColumnWidth(newMiddleWidth);
+        }
+      } else if (isDraggingRight) {
+        const deltaX = touch.clientX - startX;
+        const newRightWidth = Math.max(20, Math.min(40, startRightWidth - (deltaX / containerWidth) * 100));
+        const newMiddleWidth = startMiddleWidth + ((startRightWidth - newRightWidth) / 100) * 100;
+
+        if (newMiddleWidth >= 30) {
+          setRightColumnWidth(newRightWidth);
+          setMiddleColumnWidth(newMiddleWidth);
+        }
+      }
+    };
 
     const handleMouseUp = () => {
       setIsDraggingLeft(false);
       setIsDraggingRight(false);
+      
+      // Remove dragging class from document body
+      document.body.classList.remove('dragging-active');
+    };
+    
+    // Touch end handler for mobile devices
+    const handleTouchEnd = () => {
+      setIsDraggingLeft(false);
+      setIsDraggingRight(false);
+      
+      // Remove dragging class from document body
+      document.body.classList.remove('dragging-active');
     };
 
     if (isDraggingLeft || isDraggingRight) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+      document.addEventListener('touchend', handleTouchEnd);
+      document.addEventListener('touchcancel', handleTouchEnd);
+      
+      // Add dragging class to document body
+      document.body.classList.add('dragging-active');
     }
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+      document.removeEventListener('touchcancel', handleTouchEnd);
+      document.body.classList.remove('dragging-active');
     };
   }, [isDraggingLeft, isDraggingRight, startX, startLeftWidth, startMiddleWidth, startRightWidth]);
 
   // Start dragging for left handle
   const startDraggingLeft = (e: React.MouseEvent) => {
+    e.preventDefault();
     setIsDraggingLeft(true);
     setStartX(e.clientX);
     setStartLeftWidth(leftColumnWidth);
     setStartMiddleWidth(middleColumnWidth);
+    
+    // Add dragging class to document body immediately
+    document.body.classList.add('dragging-active');
   };
 
   // Start dragging for right handle
   const startDraggingRight = (e: React.MouseEvent) => {
+    e.preventDefault();
     setIsDraggingRight(true);
     setStartX(e.clientX);
     setStartRightWidth(rightColumnWidth);
     setStartMiddleWidth(middleColumnWidth);
+    
+    // Add dragging class to document body immediately
+    document.body.classList.add('dragging-active');
   };
 
   // Check if Ollama is running
@@ -406,7 +470,7 @@ function App() {
                 sx={{ 
                   width: `${leftColumnWidth}%`,
                   height: '100%',
-                  borderRight: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRight: '1px solid rgba(255, 255, 255, 0.15)',
                   transition: isDraggingLeft ? 'none' : 'all var(--sidebar-transition)',
                   overflow: 'hidden',
                   display: 'flex',
@@ -459,6 +523,7 @@ function App() {
                 
                 {/* Left resize handle */}
                 <Box
+                  className="drag-handle"
                   sx={{
                     position: 'absolute',
                     top: 0,
@@ -477,6 +542,14 @@ function App() {
                     },
                   }}
                   onMouseDown={startDraggingLeft}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    startDraggingLeft({
+                      clientX: touch.clientX,
+                      preventDefault: () => {}
+                    } as React.MouseEvent);
+                  }}
                 >
                   <Box 
                     className="resize-icon"
@@ -542,6 +615,7 @@ function App() {
 
               {/* Right resize handle */}
               <Box
+                className="drag-handle"
                 sx={{
                   position: 'absolute',
                   top: 0,
@@ -560,6 +634,14 @@ function App() {
                   },
                 }}
                 onMouseDown={startDraggingRight}
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  const touch = e.touches[0];
+                  startDraggingRight({
+                    clientX: touch.clientX,
+                    preventDefault: () => {}
+                  } as React.MouseEvent);
+                }}
               >
                 <Box 
                   className="resize-icon"
@@ -582,7 +664,7 @@ function App() {
                 width: `${rightColumnWidth}%`,
                 height: '100%',
                 transition: isDraggingRight ? 'none' : 'all var(--sidebar-transition)',
-                borderLeft: '1px solid rgba(255, 255, 255, 0.08)',
+                borderLeft: '1px solid rgba(255, 255, 255, 0.15)',
                 bgcolor: 'background.paper',
               }}
             >

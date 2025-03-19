@@ -190,3 +190,37 @@ hr {
   cursor: col-resize !important;
   pointer-events: none;
 }
+
+/* Prevent text selection during sidebar dragging */
+.dragging-active {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  pointer-events: none !important;
+}
+
+.dragging-active * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+.drag-handle {
+  cursor: col-resize;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Divider styling */
+.MuiDivider-root {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Improve border visibility */
+.border-enhanced {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}

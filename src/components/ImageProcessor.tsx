@@ -1,36 +1,39 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Box, Typography, Button, Tooltip, Chip, Zoom, Fade } from '@mui/material';
 import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
-import AutorenewIcon from '@mui/icons-material/Autorenew';
-import SaveIcon from '@mui/icons-material/Save';
+import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
+import CheckBoxRoundedIcon from '@mui/icons-material/CheckBoxRounded';
 import CropIcon from '@mui/icons-material/Crop';
 import StopIcon from '@mui/icons-material/Stop';
-import ClearAllIcon from '@mui/icons-material/ClearAll';
+import CancelPresentationRoundedIcon from '@mui/icons-material/CancelPresentationRounded';
 import 'react-image-crop/dist/ReactCrop.css';
 
 // Color palette for regions (much more transparent)
 const regionColors = [
-  'rgba(245, 158, 11, 0.25)', // amber
-  'rgba(14, 165, 233, 0.25)',  // sky blue
-  'rgba(34, 197, 94, 0.25)',   // green
-  'rgba(168, 85, 247, 0.25)',  // purple
-  'rgba(239, 68, 68, 0.25)',   // red
-  'rgba(251, 146, 60, 0.25)',  // orange
+  'rgba(245, 158, 11, 0.35)', // amber
+  'rgba(14, 165, 233, 0.35)',  // sky blue
+  'rgba(34, 197, 94, 0.35)',   // green
+  'rgba(168, 85, 247, 0.35)',  // purple
+  'rgba(239, 68, 68, 0.35)',   // red
+  'rgba(251, 146, 60, 0.35)',  // orange
 ];
 
 // Color palette for borders (still visible but more transparent)
 const regionBorderColors = [
-  'rgba(245, 158, 11, 0.5)', // amber
-  'rgba(14, 165, 233, 0.5)',  // sky blue
-  'rgba(34, 197, 94, 0.5)',   // green
-  'rgba(168, 85, 247, 0.5)',  // purple
-  'rgba(239, 68, 68, 0.5)',   // red
-  'rgba(251, 146, 60, 0.5)',  // orange
+  'rgba(245, 158, 11, 0.7)', // amber
+  'rgba(14, 165, 233, 0.7)',  // sky blue
+  'rgba(34, 197, 94, 0.7)',   // green
+  'rgba(168, 85, 247, 0.7)',  // purple
+  'rgba(239, 68, 68, 0.7)',   // red
+  'rgba(251, 146, 60, 0.7)',  // orange
 ];
 
 interface Region {
   id: string;
-  crop: PixelCrop;
+  crop: PixelCrop & {
+    originalWidth?: number;
+    originalHeight?: number;
+  };
   imageData: string;
 }
 
@@ -131,6 +134,26 @@ const ImageProcessor = ({
     const img = e.currentTarget;
     imgRef.current = img;
     setCrop(undefined);
+    
+    // Set up resize observer for the image
+    if (typeof ResizeObserver !== 'undefined') {
+      const resizeObserver = new ResizeObserver(() => {
+        // When image size changes, update region positions by forcing a re-render
+        setRegions(prevRegions => [...prevRegions]);
+      });
+      
+      // Start observing the image element
+      resizeObserver.observe(img);
+      
+      // Clean up observer when component unmounts
+      const cleanup = () => {
+        resizeObserver.disconnect();
+        img.removeEventListener('unload', cleanup);
+      };
+      
+      // Add cleanup handler to image unload
+      img.addEventListener('unload', cleanup);
+    }
   }, []);
 
   // Get current scale factors based on displayed image size vs natural size
@@ -141,6 +164,57 @@ const ImageProcessor = ({
     const scaleY = imgRef.current.naturalHeight / imgRef.current.height;
     
     return { scaleX, scaleY };
+  }, []);
+
+  // Calculate the scaling factor for displaying regions based on current image display size
+  const getRegionScaleFactors = useCallback((region?: Region) => {
+    if (!imgRef.current) return { scaleX: 1, scaleY: 1 };
+    
+    // Calculate the current displayed image dimensions
+    const displayWidth = imgRef.current.width;
+    const displayHeight = imgRef.current.height;
+    
+    // Use stored original dimensions if available, otherwise use natural dimensions
+    const originalWidth = region?.crop.originalWidth || imgRef.current.naturalWidth;
+    const originalHeight = region?.crop.originalHeight || imgRef.current.naturalHeight;
+    
+    // Return scaling factors (from original stored coordinates to current display)
+    return {
+      scaleX: displayWidth / originalWidth,
+      scaleY: displayHeight / originalHeight
+    };
+  }, []);
+
+  // Force update of region overlays when container size changes
+  useEffect(() => {
+    const handleResize = () => {
+      // Force component re-render to update region positions
+      setRegions(regions => [...regions]);
+    };
+
+    window.addEventListener('resize', handleResize);
+    
+    // Create a ResizeObserver to watch for image size changes
+    if (typeof ResizeObserver !== 'undefined' && imgRef.current) {
+      const resizeObserver = new ResizeObserver(() => {
+        // When image size changes, update region positions
+        handleResize();
+      });
+      
+      // Start observing the image element
+      if (imgRef.current) {
+        resizeObserver.observe(imgRef.current);
+      }
+      
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        resizeObserver.disconnect();
+      };
+    }
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   // Generate a cropped image
@@ -186,11 +260,25 @@ const ImageProcessor = ({
       // Generate the cropped image data
       const croppedImage = generateCroppedImage(completedCrop);
       
+      // Get current scale factors to store the original dimensions
+      const { scaleX, scaleY } = getScaleFactors();
+      
+      // Create a region with the original coordinates in the image
+      const originalCrop = {
+        ...completedCrop,
+        x: completedCrop.x * scaleX,
+        y: completedCrop.y * scaleY,
+        width: completedCrop.width * scaleX,
+        height: completedCrop.height * scaleY,
+        originalWidth: imgRef.current.naturalWidth,
+        originalHeight: imgRef.current.naturalHeight
+      };
+      
       // Create a new region
       const regionId = `region-${Date.now()}`;
       const newRegion: Region = {
         id: regionId,
-        crop: { ...completedCrop },
+        crop: originalCrop,
         imageData: croppedImage || ''
       };
       
@@ -347,14 +435,14 @@ const ImageProcessor = ({
               variant="outlined"
               color="primary"
               size="small"
-              startIcon={<SaveIcon />}
+              startIcon={<CheckBoxRoundedIcon />}
               onClick={saveRegion}
               disabled={!completedCrop || isGenerating}
               sx={{
                 minWidth: '120px',
                 backgroundColor: !completedCrop ? 'transparent' : 'rgba(245, 158, 11, 0.08)',
                 borderColor: !completedCrop ? undefined : getNextColor().border,
-                color: !completedCrop ? undefined : 'rgba(0, 0, 0, 0.87)',
+                color: !completedCrop ? undefined : getNextColor().border,
                 fontWeight: !completedCrop ? undefined : 500,
               }}
             >
@@ -369,7 +457,7 @@ const ImageProcessor = ({
               variant="outlined"
               color="error"
               size="small"
-              startIcon={<ClearAllIcon />}
+              startIcon={<CancelPresentationRoundedIcon />}
               onClick={resetAllRegions}
               disabled={regions.length === 0 || isGenerating}
               sx={{
@@ -388,12 +476,13 @@ const ImageProcessor = ({
               variant="contained"
               color="primary"
               size="small"
-              startIcon={<AutorenewIcon />}
+              startIcon={<AutoAwesomeRoundedIcon />}
               onClick={handleGenerate}
               disabled={!imgSrc || isGenerating}
               sx={{
                 minWidth: '120px',
                 backgroundImage: 'linear-gradient(to right, #f59e0b, #d97706)',
+                boxShadow: '0 2px 8px rgba(245, 158, 11, 0.3)',
               }}
             >
               Generate
@@ -427,6 +516,12 @@ const ImageProcessor = ({
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
               {regions.map((region, index) => {
                 const colorIndex = index % regionColors.length;
+                getRegionScaleFactors(region);
+                
+                // Calculate scaled coordinates and dimensions
+                
+                // Get image position to align overlays properly
+                
                 return (
                   <Zoom in={true} key={region.id} timeout={200}>
                     <Chip
@@ -453,7 +548,7 @@ const ImageProcessor = ({
           position: 'relative',
           flex: 1, 
           overflow: 'auto',
-          border: imgSrc ? '1px solid rgba(255, 255, 255, 0.08)' : 'none',
+          border: imgSrc ? '1px solid rgba(255, 255, 255, 0.15)' : 'none',
           borderRadius: 1,
           backgroundColor: '#000000',
           display: 'flex',
@@ -495,24 +590,39 @@ const ImageProcessor = ({
                     top: 0, 
                     left: 0, 
                     width: '100%', 
-                    height: '100%', 
-                    pointerEvents: 'none'
+                    height: '100%',
+                    pointerEvents: 'none',
+                    zIndex: 10
                   }}
                 >
                   {regions.map((region, index) => {
                     const colorIndex = index % regionColors.length;
+                    const { scaleX, scaleY } = getRegionScaleFactors(region);
+                    
+                    // Calculate scaled coordinates and dimensions
+                    const scaledX = region.crop.x * scaleX;
+                    const scaledY = region.crop.y * scaleY;
+                    const scaledWidth = region.crop.width * scaleX;
+                    const scaledHeight = region.crop.height * scaleY;
+                    
+                    // Get image position to align overlays properly
+                    const imagePosition = imgRef.current ? {
+                      left: imgRef.current.offsetLeft || 0,
+                      top: imgRef.current.offsetTop || 0
+                    } : { left: 0, top: 0 };
+                    
                     return (
                       <div
                         key={region.id}
                         className="region-overlay"
                         style={{
                           position: 'absolute',
-                          left: `${region.crop.x}px`,
-                          top: `${region.crop.y}px`,
-                          width: `${region.crop.width}px`,
-                          height: `${region.crop.height}px`,
+                          left: `${imagePosition.left + scaledX}px`,
+                          top: `${imagePosition.top + scaledY}px`,
+                          width: `${scaledWidth}px`,
+                          height: `${scaledHeight}px`,
                           backgroundColor: regionColors[colorIndex],
-                          border: `1px solid ${regionBorderColors[colorIndex]}`,
+                          border: `2px solid ${regionBorderColors[colorIndex]}`,
                           boxSizing: 'border-box',
                           display: 'flex',
                           justifyContent: 'center',
@@ -522,8 +632,8 @@ const ImageProcessor = ({
                       >
                         <div 
                           style={{
-                            color: 'rgba(255, 255, 255, 0.5)',
-                            fontSize: `${Math.min(region.crop.width, region.crop.height) * 0.7}px`,
+                            color: 'rgba(255, 255, 255, 0.9)',
+                            fontSize: `${Math.min(scaledWidth, scaledHeight) * 0.4}px`,
                             fontWeight: 'bold',
                             userSelect: 'none',
                             width: '100%',
@@ -532,6 +642,7 @@ const ImageProcessor = ({
                             justifyContent: 'center',
                             alignItems: 'center',
                             textAlign: 'center',
+                            textShadow: '0px 0px 3px rgba(0, 0, 0, 0.7)',
                           }}
                         >
                           {index + 1}
