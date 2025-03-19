@@ -1,4 +1,5 @@
 import { Box, Typography, Paper, Stack } from '@mui/material';
+import CollectionsIcon from '@mui/icons-material/Collections';
 
 interface ImageGridProps {
   images: File[];
@@ -9,8 +10,9 @@ interface ImageGridProps {
 const ImageGrid = ({ images, selectedImageIndex, onImageSelect }: ImageGridProps) => {
   return (
     <Box sx={{ width: '100%' }}>
-      <Typography variant="subtitle2" gutterBottom>
-        Upload Images
+      <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <CollectionsIcon fontSize="small" color="primary" />
+        Uploaded Images
       </Typography>
       <Stack direction="row" spacing={0.5} sx={{ overflowX: 'auto', pb: 0.5 }}>
         {images.length > 0 ? (
@@ -18,7 +20,6 @@ const ImageGrid = ({ images, selectedImageIndex, onImageSelect }: ImageGridProps
             <Paper
               key={index}
               sx={{
-                width: '60px',
                 height: '60px',
                 display: 'flex',
                 alignItems: 'center',
@@ -30,6 +31,7 @@ const ImageGrid = ({ images, selectedImageIndex, onImageSelect }: ImageGridProps
                 borderRadius: 1,
                 flexShrink: 0,
                 bgcolor: 'background.paper',
+                p: 0,
               }}
               onClick={() => onImageSelect(index)}
               elevation={0}
@@ -38,9 +40,9 @@ const ImageGrid = ({ images, selectedImageIndex, onImageSelect }: ImageGridProps
                 src={URL.createObjectURL(image)}
                 alt={`Image ${index + 1}`}
                 style={{
-                  maxHeight: '100%',
-                  maxWidth: '100%',
-                  objectFit: 'contain',
+                  height: index === selectedImageIndex ? '56px' : '58px', // Account for border thickness
+                  width: 'auto',
+                  objectFit: 'cover',
                 }}
               />
             </Paper>

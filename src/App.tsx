@@ -1,7 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
-import { Box, Typography, CssBaseline, Container, Grid, AppBar, Toolbar, Alert, Snackbar, IconButton } from '@mui/material';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { Box, Typography, CssBaseline, Container, Grid, AppBar, Toolbar, Alert, Snackbar, IconButton, useMediaQuery } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import MenuIcon from '@mui/icons-material/Menu';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 import ImageUploader from './components/ImageUploader';
 import ModelSettings from './components/ModelSettings';
 import PromptTemplate from './components/PromptTemplate';
@@ -9,7 +11,7 @@ import ImageProcessor from './components/ImageProcessor';
 import ImageGrid from './components/ImageGrid';
 import OutputText from './components/OutputText';
 import ollamaService from './services/ollamaService';
-import theme from './theme';
+import { createAppTheme } from './theme';
 import './App.css';
 
 // Define Region interface
@@ -26,6 +28,34 @@ interface Region {
 }
 
 function App() {
+  // Theme state
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const [mode, setMode] = useState<'light' | 'dark'>(prefersDarkMode ? 'dark' : 'dark');
+  
+  // Create the theme object
+  const themeObject = useMemo(() => createAppTheme(mode), [mode]);
+  
+  // Toggle theme mode
+  const toggleThemeMode = () => {
+    setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+  };
+
+  // Effect to update body class based on theme
+  useEffect(() => {
+    document.body.classList.remove('light-mode', 'dark-mode');
+    document.body.classList.add(`${mode}-mode`);
+    
+    // Also update the region selection colors
+    const root = document.documentElement;
+    if (mode === 'dark') {
+      root.style.setProperty('--next-region-color', 'rgba(224, 140, 22, 0.6)');
+      root.style.setProperty('--next-region-border', 'rgba(224, 140, 22, 0.9)');
+    } else {
+      root.style.setProperty('--next-region-color', 'rgba(217, 119, 6, 0.6)');
+      root.style.setProperty('--next-region-border', 'rgba(217, 119, 6, 0.9)');
+    }
+  }, [mode]);
+
   // State for uploaded images
   const [images, setImages] = useState<File[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(-1);
@@ -417,7 +447,7 @@ function App() {
   const imgSrc = currentImage ? URL.createObjectURL(currentImage) : null;
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={themeObject}>
       <CssBaseline />
       <Box sx={{ 
         flexGrow: 1, 
@@ -426,8 +456,11 @@ function App() {
         flexDirection: 'column',
         overflow: 'hidden', // Prevent overflow at app level
       }}>
-        <AppBar position="static" elevation={0}>
-          <Toolbar variant="dense" sx={{ minHeight: '36px', height: '36px' }}>
+        <AppBar position="static" elevation={0} sx={{ 
+          borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
+          bgcolor: 'background.paper'
+        }}>
+          <Toolbar variant="dense" sx={{ minHeight: '36px', height: '36px', px: 1.5 }}>
             <IconButton
               edge="start"
               color="inherit"
@@ -437,17 +470,40 @@ function App() {
                 transition: 'all 0.3s ease',
                 transform: sidebarOpen ? 'rotate(0deg)' : 'rotate(180deg)',
                 '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  backgroundColor: mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
                 },
                 padding: '4px',
+                color: (theme) => theme.palette.text.primary,
               }}
               onClick={toggleSidebar}
             >
               <MenuIcon fontSize="small" />
             </IconButton>
-            <Typography variant="subtitle1" component="div" sx={{ flexGrow: 1 }}>
+            <Typography 
+              variant="subtitle1" 
+              component="div" 
+              sx={{ 
+                flexGrow: 1, 
+                fontWeight: 500,
+                fontSize: '0.95rem',
+                letterSpacing: '0.01em',
+                color: (theme) => theme.palette.text.primary
+              }}
+            >
               VLM OCR
             </Typography>
+            <IconButton 
+              edge="end"
+              aria-label="toggle theme"
+              onClick={toggleThemeMode}
+              sx={{ 
+                padding: '4px',
+                ml: 1,
+                color: (theme) => theme.palette.text.primary,
+              }}
+            >
+              {mode === 'dark' ? <Brightness7Icon fontSize="small" /> : <Brightness4Icon fontSize="small" />}
+            </IconButton>
           </Toolbar>
         </AppBar>
         
@@ -464,116 +520,22 @@ function App() {
         >
           <Grid container sx={{ flexGrow: 1, height: 'calc(100vh - 36px)', overflow: 'hidden' }}>
             {/* Left Column (Collapsible Sidebar) */}
-            {sidebarOpen && (
-              <Grid 
-                item
-                sx={{ 
-                  width: `${leftColumnWidth}%`,
-                  height: '100%',
-                  borderRight: '1px solid rgba(255, 255, 255, 0.15)',
-                  transition: isDraggingLeft ? 'none' : 'all var(--sidebar-transition)',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  bgcolor: 'background.paper',
-                  position: 'relative',
-                }}
-              >
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    height: '100%',
-                    gap: 3,
-                    p: 3,
-                    overflow: 'hidden',
-                  }}
-                >
-                  <Box sx={{ 
-                    flex: '0 0 auto',
-                    mb: 1,
-                  }}>
-                    <ImageUploader onImageUpload={handleImageUpload} />
-                  </Box>
-                  
-                  <Box sx={{ 
-                    flex: 1, 
-                    overflowY: 'auto',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 4,
-                    pr: 1, // Add padding right to account for scrollbar
-                    '&::-webkit-scrollbar': {
-                      width: '6px',
-                    },
-                    '&::-webkit-scrollbar-thumb': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                      borderRadius: '3px',
-                    },
-                  }}>
-                    <ModelSettings
-                      onModelChange={setModel}
-                      onContextLengthChange={setContextLength}
-                      onTemperatureChange={setTemperature}
-                      onSeedChange={setSeed}
-                    />
-                    <PromptTemplate onChange={setPromptTemplate} />
-                  </Box>
-                </Box>
-                
-                {/* Left resize handle */}
-                <Box
-                  className="drag-handle"
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    right: -5,
-                    width: 10,
-                    height: '100%',
-                    cursor: 'col-resize',
-                    zIndex: 10,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    '&:hover': {
-                      '& .resize-icon': {
-                        opacity: 0.8,
-                      },
-                    },
-                  }}
-                  onMouseDown={startDraggingLeft}
-                  onTouchStart={(e) => {
-                    e.preventDefault();
-                    const touch = e.touches[0];
-                    startDraggingLeft({
-                      clientX: touch.clientX,
-                      preventDefault: () => {}
-                    } as React.MouseEvent);
-                  }}
-                >
-                  <Box 
-                    className="resize-icon"
-                    sx={{ 
-                      backgroundColor: 'rgba(255,255,255,0.2)',
-                      width: 2,
-                      height: '80%',
-                      borderRadius: 4,
-                      opacity: isDraggingLeft ? 0.8 : 0,
-                      transition: 'opacity 0.2s',
-                    }}
-                  />
-                </Box>
-              </Grid>
-            )}
-            
-            {/* Middle Column */}
             <Grid 
               item
               sx={{ 
-                width: sidebarOpen ? `${middleColumnWidth}%` : `${middleColumnWidth + leftColumnWidth}%`,
+                width: `${leftColumnWidth}%`,
                 height: '100%',
-                transition: isDraggingLeft || isDraggingRight ? 'none' : 'all var(--sidebar-transition)',
-                position: 'relative',
+                borderRight: (theme) => `1px solid ${theme.palette.divider}`,
+                transition: isDraggingLeft ? 'none' : 'transform 0.3s ease',
+                transform: sidebarOpen ? 'translateX(0)' : `translateX(-100%)`,
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+                bgcolor: 'background.paper',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                zIndex: 10,
               }}
             >
               <Box
@@ -583,10 +545,115 @@ function App() {
                   height: '100%',
                   gap: 3,
                   p: 3,
+                  pt: 1,
                   overflow: 'hidden',
                 }}
               >
-                <Box sx={{ flex: '0 0 auto' }}>
+                <Box sx={{ 
+                  flex: '0 0 auto',
+                  mb: 1,
+                }}>
+                  <ImageUploader onImageUpload={handleImageUpload} />
+                </Box>
+                
+                <Box sx={{ 
+                  flex: 1, 
+                  overflowY: 'auto',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 4,
+                  pr: 1, // Add padding right to account for scrollbar
+                  '&::-webkit-scrollbar': {
+                    width: '6px',
+                  },
+                  '&::-webkit-scrollbar-thumb': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    borderRadius: '3px',
+                  },
+                }}>
+                  <ModelSettings
+                    onModelChange={setModel}
+                    onContextLengthChange={setContextLength}
+                    onTemperatureChange={setTemperature}
+                    onSeedChange={setSeed}
+                  />
+                  <PromptTemplate onChange={setPromptTemplate} />
+                </Box>
+              </Box>
+              
+              {/* Left resize handle */}
+              <Box
+                className="drag-handle"
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  right: -5,
+                  width: 10,
+                  height: '100%',
+                  cursor: 'col-resize',
+                  zIndex: 10,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  '&:hover': {
+                    '& .resize-icon': {
+                      opacity: 0.8,
+                    },
+                  },
+                }}
+                onMouseDown={startDraggingLeft}
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  const touch = e.touches[0];
+                  startDraggingLeft({
+                    clientX: touch.clientX,
+                    preventDefault: () => {}
+                  } as React.MouseEvent);
+                }}
+              >
+                <Box 
+                  className="resize-icon"
+                  sx={{ 
+                    backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+                    width: 2,
+                    height: '80%',
+                    borderRadius: 4,
+                    opacity: isDraggingLeft ? 0.8 : 0,
+                    transition: 'opacity 0.2s',
+                  }}
+                />
+              </Box>
+            </Grid>
+            
+            {/* Middle Column */}
+            <Grid 
+              item
+              sx={{ 
+                width: sidebarOpen ? `${middleColumnWidth}%` : `${middleColumnWidth + leftColumnWidth}%`,
+                height: '100%',
+                transition: isDraggingLeft || isDraggingRight ? 'none' : 'all 0.3s ease',
+                position: 'absolute',
+                left: sidebarOpen ? `${leftColumnWidth}%` : 0,
+                top: 0,
+                zIndex: 5,
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%',
+                  gap: 0,
+                  p: 0,
+                  overflow: 'hidden',
+                }}
+              >
+                <Box sx={{ 
+                  flex: '0 0 auto',
+                  p: 3,
+                  pt: 1,
+                  pb: 2 
+                }}>
                   <ImageGrid
                     images={images}
                     selectedImageIndex={selectedImageIndex}
@@ -594,13 +661,26 @@ function App() {
                   />
                 </Box>
                 
+                {/* Explicit border div that will definitely be visible */}
+                <Box 
+                  sx={{ 
+                    height: '1px', 
+                    backgroundColor: (theme) => theme.palette.divider,
+                    width: '100%',
+                    margin: 0,
+                    padding: 0,
+                  }} 
+                />
+                
                 <Box sx={{ 
                   flex: 1, 
                   display: 'flex', 
                   flexDirection: 'column', 
                   overflow: 'hidden',
                   borderRadius: 1,
-                  backgroundColor: '#000000',
+                  backgroundColor: 'background.paper',
+                  p: 3,
+                  pt: 1
                 }}>
                   <ImageProcessor
                     image={currentImage}
@@ -646,7 +726,7 @@ function App() {
                 <Box 
                   className="resize-icon"
                   sx={{ 
-                    backgroundColor: 'rgba(255,255,255,0.2)',
+                    backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
                     width: 2,
                     height: '80%',
                     borderRadius: 4,
@@ -663,9 +743,13 @@ function App() {
               sx={{ 
                 width: `${rightColumnWidth}%`,
                 height: '100%',
-                transition: isDraggingRight ? 'none' : 'all var(--sidebar-transition)',
-                borderLeft: '1px solid rgba(255, 255, 255, 0.15)',
+                transition: isDraggingRight ? 'none' : 'width 0.3s ease',
+                borderLeft: (theme) => `1px solid ${theme.palette.divider}`,
                 bgcolor: 'background.paper',
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                zIndex: 5,
               }}
             >
               <Box
@@ -674,6 +758,7 @@ function App() {
                   flexDirection: 'column',
                   height: '100%',
                   p: 3,
+                  pt: 1,
                 }}
               >
                 <OutputText 

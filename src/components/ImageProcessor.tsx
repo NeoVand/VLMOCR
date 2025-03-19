@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Box, Typography, Button, Tooltip, Chip, Zoom, Fade } from '@mui/material';
+import { Box, Typography, Button, Tooltip, Chip, Zoom, Fade, useTheme } from '@mui/material';
 import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
 import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 import CheckBoxRoundedIcon from '@mui/icons-material/CheckBoxRounded';
@@ -8,25 +8,25 @@ import StopIcon from '@mui/icons-material/Stop';
 import CancelPresentationRoundedIcon from '@mui/icons-material/CancelPresentationRounded';
 import 'react-image-crop/dist/ReactCrop.css';
 
-// Color palette for regions (much more transparent)
-const regionColors = [
-  'rgba(245, 158, 11, 0.35)', // amber
-  'rgba(14, 165, 233, 0.35)',  // sky blue
-  'rgba(34, 197, 94, 0.35)',   // green
-  'rgba(168, 85, 247, 0.35)',  // purple
-  'rgba(239, 68, 68, 0.35)',   // red
-  'rgba(251, 146, 60, 0.35)',  // orange
-];
-
-// Color palette for borders (still visible but more transparent)
-const regionBorderColors = [
-  'rgba(245, 158, 11, 0.7)', // amber
-  'rgba(14, 165, 233, 0.7)',  // sky blue
-  'rgba(34, 197, 94, 0.7)',   // green
-  'rgba(168, 85, 247, 0.7)',  // purple
-  'rgba(239, 68, 68, 0.7)',   // red
-  'rgba(251, 146, 60, 0.7)',  // orange
-];
+// Define colors for dark and light themes
+const getRegionColors = (isDark: boolean) => ({
+  bg: [
+    isDark ? 'rgba(224, 140, 22, 0.35)' : 'rgba(217, 119, 6, 0.35)', // amber
+    isDark ? 'rgba(14, 165, 233, 0.35)' : 'rgba(3, 105, 161, 0.35)',  // sky blue
+    isDark ? 'rgba(34, 197, 94, 0.35)' : 'rgba(22, 163, 74, 0.35)',   // green
+    isDark ? 'rgba(168, 85, 247, 0.35)' : 'rgba(147, 51, 234, 0.35)',  // purple
+    isDark ? 'rgba(239, 68, 68, 0.35)' : 'rgba(220, 38, 38, 0.35)',   // red
+    isDark ? 'rgba(251, 146, 60, 0.35)' : 'rgba(234, 88, 12, 0.35)',  // orange
+  ],
+  border: [
+    isDark ? 'rgba(224, 140, 22, 0.7)' : 'rgba(217, 119, 6, 0.7)', // amber
+    isDark ? 'rgba(14, 165, 233, 0.7)' : 'rgba(3, 105, 161, 0.7)',  // sky blue
+    isDark ? 'rgba(34, 197, 94, 0.7)' : 'rgba(22, 163, 74, 0.7)',   // green
+    isDark ? 'rgba(168, 85, 247, 0.7)' : 'rgba(147, 51, 234, 0.7)',  // purple
+    isDark ? 'rgba(239, 68, 68, 0.7)' : 'rgba(220, 38, 38, 0.7)',   // red
+    isDark ? 'rgba(251, 146, 60, 0.7)' : 'rgba(234, 88, 12, 0.7)',  // orange
+  ]
+});
 
 interface Region {
   id: string;
@@ -54,6 +54,13 @@ const ImageProcessor = ({
   onStop,
   isGenerating
 }: ImageProcessorProps) => {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
+  const colors = getRegionColors(isDarkMode);
+  
+  const regionColors = colors.bg;
+  const regionBorderColors = colors.border;
+  
   const [imgSrc, setImgSrc] = useState<string | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
   const cropComponentRef = useRef<HTMLDivElement | null>(null);
@@ -357,6 +364,10 @@ const ImageProcessor = ({
   const renderSelectionGuide = () => {
     if (!imgRef.current || !showSelectionGuide || crop || !imgSrc) return null;
     
+    const primaryColor = theme.palette.primary.main;
+    const backgroundColor = theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.9)';
+    const textColor = theme.palette.mode === 'dark' ? '#fff' : '#000';
+    
     return (
       <Fade in={true} timeout={800}>
         <div
@@ -369,7 +380,7 @@ const ImageProcessor = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.3)',
             zIndex: 10,
             pointerEvents: 'none',
           }}
@@ -377,7 +388,7 @@ const ImageProcessor = ({
           <div
             style={{
               padding: '16px 24px',
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              backgroundColor: backgroundColor,
               borderRadius: '8px',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
               display: 'flex',
@@ -387,15 +398,15 @@ const ImageProcessor = ({
               maxWidth: '80%',
             }}
           >
-            <CropIcon style={{ fontSize: 32, opacity: 0.9, color: '#f59e0b' }} />
-            <Typography variant="subtitle2" sx={{ textAlign: 'center', color: '#fff', fontWeight: 500 }}>
+            <CropIcon style={{ fontSize: 32, opacity: 0.9, color: primaryColor }} />
+            <Typography variant="subtitle2" sx={{ textAlign: 'center', color: textColor, fontWeight: 500 }}>
               Click and drag to select a region of the image
             </Typography>
             <div 
               style={{
                 width: '120px',
                 height: '80px',
-                border: '2px dashed #f59e0b',
+                border: `2px dashed ${primaryColor}`,
                 borderRadius: '4px',
                 display: 'flex',
                 alignItems: 'center',
@@ -440,9 +451,13 @@ const ImageProcessor = ({
               disabled={!completedCrop || isGenerating}
               sx={{
                 minWidth: '120px',
-                backgroundColor: !completedCrop ? 'transparent' : 'rgba(245, 158, 11, 0.08)',
-                borderColor: !completedCrop ? undefined : getNextColor().border,
-                color: !completedCrop ? undefined : getNextColor().border,
+                backgroundColor: 'transparent',
+                borderColor: !completedCrop 
+                  ? undefined 
+                  : getNextColor().border,
+                color: !completedCrop 
+                  ? undefined 
+                  : getNextColor().border,
                 fontWeight: !completedCrop ? undefined : 500,
               }}
             >
@@ -462,7 +477,11 @@ const ImageProcessor = ({
               disabled={regions.length === 0 || isGenerating}
               sx={{
                 minWidth: '120px',
-                backgroundColor: regions.length === 0 ? 'transparent' : 'rgba(239, 68, 68, 0.08)',
+                backgroundColor: regions.length === 0 
+                  ? 'transparent' 
+                  : theme.palette.mode === 'dark'
+                    ? 'rgba(239, 68, 68, 0.08)'
+                    : 'rgba(220, 38, 38, 0.08)',
               }}
             >
               Clear Regions
@@ -481,8 +500,27 @@ const ImageProcessor = ({
               disabled={!imgSrc || isGenerating}
               sx={{
                 minWidth: '120px',
-                backgroundImage: 'linear-gradient(to right, #f59e0b, #d97706)',
-                boxShadow: '0 2px 8px rgba(245, 158, 11, 0.3)',
+                backgroundImage: imgSrc && !isGenerating 
+                  ? `linear-gradient(to right, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`
+                  : 'none',
+                boxShadow: imgSrc && !isGenerating 
+                  ? `0 2px 8px ${theme.palette.mode === 'dark' 
+                    ? 'rgba(224, 140, 22, 0.3)' 
+                    : 'rgba(217, 119, 6, 0.2)'}`
+                  : 'none',
+                bgcolor: (!imgSrc || isGenerating) 
+                  ? theme.palette.mode === 'dark' 
+                    ? 'rgba(255, 255, 255, 0.08)' 
+                    : 'rgba(0, 0, 0, 0.08)'
+                  : undefined,
+                '& .MuiButton-startIcon': {
+                  color: (!imgSrc || isGenerating) ? 'rgba(255, 255, 255, 0.3)' : undefined,
+                },
+                '&.Mui-disabled': {
+                  color: theme.palette.mode === 'dark' 
+                    ? 'rgba(255, 255, 255, 0.3)' 
+                    : 'rgba(0, 0, 0, 0.3)',
+                }
               }}
             >
               Generate
@@ -498,7 +536,9 @@ const ImageProcessor = ({
               onClick={handleStop}
               sx={{
                 minWidth: '120px',
-                backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                backgroundColor: theme.palette.mode === 'dark'
+                  ? 'rgba(239, 68, 68, 0.08)'
+                  : 'rgba(220, 38, 38, 0.08)',
               }}
             >
               Stop
@@ -510,9 +550,6 @@ const ImageProcessor = ({
       {regions.length > 0 && (
         <Zoom in={regions.length > 0} timeout={300}>
           <Box sx={{ mb: 2 }}>
-            <Typography variant="caption" sx={{ display: 'block', mb: 0.5, color: 'text.secondary' }}>
-              {regions.length} {regions.length === 1 ? 'Region' : 'Regions'} Selected
-            </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
               {regions.map((region, index) => {
                 const colorIndex = index % regionColors.length;
@@ -527,12 +564,37 @@ const ImageProcessor = ({
                     <Chip
                       label={`Region ${index + 1}`}
                       size="small"
+                      variant="filled"
                       onDelete={() => deleteRegion(region.id)}
+                      onClick={() => {
+                        setCompletedCrop(region.crop);
+                        setShowSelectionGuide(false);
+                      }}
                       sx={{
-                        backgroundColor: regionColors[colorIndex],
-                        color: 'rgba(0, 0, 0, 0.87)',
+                        backgroundColor: theme.palette.mode === 'dark' 
+                          ? regionBorderColors[colorIndex].replace('0.7', '0.3')
+                          : regionBorderColors[colorIndex].replace('0.7', '0.2'),
+                        color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
                         fontWeight: 500,
+                        fontSize: '0.75rem',
+                        height: '22px',
+                        border: `1px solid ${regionBorderColors[colorIndex]}`,
                         boxShadow: 'none',
+                        textShadow: 'none',
+                        mr: 0.5,
+                        mb: 0.5,
+                        '&:hover': {
+                          backgroundColor: regionBorderColors[colorIndex].replace('0.7', '0.4'),
+                          cursor: 'pointer',
+                        },
+                        '& .MuiChip-deleteIcon': {
+                          color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
+                          opacity: 0.7,
+                          '&:hover': {
+                            opacity: 1,
+                            color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
+                          }
+                        }
                       }}
                     />
                   </Zoom>
@@ -548,9 +610,11 @@ const ImageProcessor = ({
           position: 'relative',
           flex: 1, 
           overflow: 'auto',
-          border: imgSrc ? '1px solid rgba(255, 255, 255, 0.15)' : 'none',
+          border: (theme) => imgSrc 
+            ? `1px solid ${theme.palette.divider}` 
+            : 'none',
           borderRadius: 1,
-          backgroundColor: '#000000',
+          backgroundColor: 'background.paper',
           display: 'flex',
           alignItems: 'flex-start',
           justifyContent: 'center',
@@ -621,7 +685,9 @@ const ImageProcessor = ({
                           top: `${imagePosition.top + scaledY}px`,
                           width: `${scaledWidth}px`,
                           height: `${scaledHeight}px`,
-                          backgroundColor: regionColors[colorIndex],
+                          backgroundColor: theme.palette.mode === 'dark'
+                            ? regionColors[colorIndex]
+                            : regionColors[colorIndex].replace('0.35', '0.2'),
                           border: `2px solid ${regionBorderColors[colorIndex]}`,
                           boxSizing: 'border-box',
                           display: 'flex',
@@ -632,8 +698,8 @@ const ImageProcessor = ({
                       >
                         <div 
                           style={{
-                            color: 'rgba(255, 255, 255, 0.9)',
-                            fontSize: `${Math.min(scaledWidth, scaledHeight) * 0.4}px`,
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            fontSize: `${Math.min(scaledWidth, scaledHeight) * 0.65}px`,
                             fontWeight: 'bold',
                             userSelect: 'none',
                             width: '100%',
@@ -642,7 +708,7 @@ const ImageProcessor = ({
                             justifyContent: 'center',
                             alignItems: 'center',
                             textAlign: 'center',
-                            textShadow: '0px 0px 3px rgba(0, 0, 0, 0.7)',
+                            textShadow: 'none',
                           }}
                         >
                           {index + 1}
@@ -666,9 +732,11 @@ const ImageProcessor = ({
               color: 'text.secondary',
               minHeight: '300px',
               minWidth: '300px',
+              backgroundColor: 'background.paper',
+              borderRadius: 1,
             }}>
-              <CropIcon sx={{ fontSize: 48, opacity: 0.4 }} />
-              <Typography variant="body2">
+              <CropIcon sx={{ fontSize: 48, opacity: 0.4, color: 'text.secondary' }} />
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                 Upload an image to begin
               </Typography>
             </Box>

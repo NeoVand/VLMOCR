@@ -1,54 +1,141 @@
-# React + TypeScript + Vite
+# VLMOCR - Vision Language Model OCR
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![VLMOCR Banner](./public/images/banner.svg)
 
-Currently, two official plugins are available:
+VLMOCR is a web application that uses Vision Language Models (VLMs) to extract text from images with multi-region selection, providing optical character recognition using modern AI models.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+![Screenshot](./public/images/screenshot.jpg)
 
-## Expanding the ESLint configuration
+## Features
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Multi-region OCR**: Select and process different regions of an image independently
+- **Text streaming**: View AI-generated text as it's processed
+- **Multiple image management**: Upload and switch between images
+- **Customizable settings**: Adjust context length, temperature, and seed values
+- **Custom prompts**: Tailor the extraction instructions for different content types
+- **Adjustable interface**: Resize panels to fit your workflow
+- **Cross-device compatibility**: Works on desktop and mobile browsers
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Requirements
+
+- [Node.js](https://nodejs.org/) (v16 or later)
+- [Ollama](https://ollama.ai/) - Running locally on your machine
+- A Vision-capable language model (such as llama3.1-vision or similar)
+
+## Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/VLMOCR.git
+   cd VLMOCR
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Make sure Ollama is running locally:
+   ```bash
+   ollama serve
+   ```
+
+4. Pull a vision-capable model:
+   ```bash
+   ollama pull llama3.1-vision
+   ```
+   
+5. Start the application:
+   ```bash
+   npm run dev
+   ```
+
+6. Open your browser and navigate to [http://localhost:5173](http://localhost:5173)
+
+## Usage
+
+### 1. Upload Images
+- Click on the image upload area or drag and drop images
+- Select from uploaded images in the image grid
+
+### 2. Configure Settings
+- Choose a vision model from the dropdown
+- Adjust context length, temperature and seed as needed
+- Customize the prompt template for your specific OCR needs
+
+### 3. Select Regions
+- Click and drag on the image to select regions
+- Click "Save Region" to confirm selection
+- Add multiple regions as needed
+- Each region will be processed separately
+
+### 4. Generate Text
+- Click the "Generate" button to start text extraction
+- Watch as text appears in real-time
+- Results will be color-coded by region
+- Export or clear results as needed
+
+## Example Use Cases
+
+- **Document Processing**: Extract text from scanned documents with complex layouts
+- **Multi-column Text**: Process columns separately
+- **Mixed Content**: Extract text from images containing text and graphics
+- **Tables and Forms**: Process table cells as separate regions
+
+## Technical Details
+
+VLMOCR uses:
+
+- **React + TypeScript**: Frontend implementation
+- **Material UI**: Interface components
+- **react-image-crop**: Region selection
+- **Ollama.js**: Ollama API integration
+- **Vite**: Development and build system
+
+The application communicates with locally running Ollama models to process images. All image processing happens in your browser, keeping your images on your device.
+
+## Development
+
+### Project Structure
+
+```
+VLMOCR/
+├── src/
+│   ├── components/     # React components
+│   ├── services/       # API and service integrations
+│   ├── App.tsx         # Main application component
+│   ├── theme.ts        # UI theme configuration
+│   └── main.tsx        # Application entry point
+├── public/             # Static assets
+├── index.html          # HTML entry point
+├── package.json        # Dependencies and scripts
+└── vite.config.ts      # Build configuration
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Building for Production
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+```bash
+npm run build
 ```
+
+## Roadmap
+
+- [ ] PDF document support
+- [ ] Batch processing of multiple images
+- [ ] Save and restore sessions
+- [ ] Additional model integrations
+- [ ] Custom region labeling
+- [ ] Advanced image preprocessing options
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- [Ollama](https://ollama.ai/) for providing the backend AI capabilities
+- The React and TypeScript communities for excellent tools and libraries
+
+---
+
+*VLMOCR is a user interface for Ollama vision models and is not affiliated with Ollama or any language model providers.*

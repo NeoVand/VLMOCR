@@ -11,6 +11,9 @@ import {
   FormControlLabel
 } from '@mui/material';
 import ollama from 'ollama';
+import ChipIcon from '@mui/icons-material/Memory';
+import RulerIcon from '@mui/icons-material/Straighten';
+import ThermostatIcon from '@mui/icons-material/Thermostat';
 
 interface ModelSettingsProps {
   onModelChange: (model: string) => void;
@@ -109,7 +112,8 @@ const ModelSettings = ({
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Typography variant="subtitle2" gutterBottom sx={{ mb: 1.5 }}>
+      <Typography variant="subtitle2" gutterBottom sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+        <ChipIcon fontSize="small" color="primary" />
         Model
       </Typography>
       <FormControl fullWidth size="small" sx={{ mb: 3 }}>
@@ -142,7 +146,8 @@ const ModelSettings = ({
         </Select>
       </FormControl>
 
-      <Typography variant="subtitle2" gutterBottom sx={{ mb: 1.5 }}>
+      <Typography variant="subtitle2" gutterBottom sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+        <RulerIcon fontSize="small" color="primary" />
         Context Length
       </Typography>
       <Box sx={{ px: 1, mb: 3 }}>
@@ -162,7 +167,8 @@ const ModelSettings = ({
         />
       </Box>
 
-      <Typography variant="subtitle2" gutterBottom sx={{ mb: 1.5 }}>
+      <Typography variant="subtitle2" gutterBottom sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+        <ThermostatIcon fontSize="small" color="primary" />
         Temperature
       </Typography>
       <Box sx={{ px: 1, mb: 3 }}>

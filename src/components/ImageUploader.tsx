@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Box, Typography, Paper, Fade } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import ImageIcon from '@mui/icons-material/Image';
 
 interface ImageUploaderProps {
   onImageUpload: (images: File[]) => void;
@@ -58,7 +59,8 @@ const ImageUploader = ({ onImageUpload }: ImageUploaderProps) => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Typography variant="subtitle2" gutterBottom sx={{ mb: 1.5 }}>
+      <Typography variant="subtitle2" gutterBottom sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+        <ImageIcon fontSize="small" color="primary" />
         Upload Image
       </Typography>
       <Fade in={true}>
@@ -90,7 +92,7 @@ const ImageUploader = ({ onImageUpload }: ImageUploaderProps) => {
         >
           <CloudUploadIcon sx={{ 
             fontSize: 28, 
-            color: isDragging ? 'primary.main' : 'text.secondary', 
+            color: isDragging ? 'primary.main' : 'primary.main', 
             mr: 2,
             transition: 'color 0.2s',
           }} />

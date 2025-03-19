@@ -1,16 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
-import { Box, Typography, Button, Paper, Stack, Fade } from '@mui/material';
+import { Box, Typography, Button, Paper, Stack, Fade, useTheme } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import DeleteIcon from '@mui/icons-material/Delete';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 
-// Import the region colors from ImageProcessor
-const regionColors = [
-  'rgba(245, 158, 11, 0.7)', // amber (darker for text)
-  'rgba(14, 165, 233, 0.7)',  // sky blue
-  'rgba(34, 197, 94, 0.7)',   // green
-  'rgba(168, 85, 247, 0.7)',  // purple
-  'rgba(239, 68, 68, 0.7)',   // red
-  'rgba(251, 146, 60, 0.7)',  // orange
+// Function to get region colors based on theme
+const getRegionColors = (isDark: boolean) => [
+  isDark ? 'rgba(224, 140, 22, 0.7)' : 'rgba(217, 119, 6, 0.7)', // amber (darker for text)
+  isDark ? 'rgba(14, 165, 233, 0.7)' : 'rgba(3, 105, 161, 0.7)',  // sky blue
+  isDark ? 'rgba(34, 197, 94, 0.7)' : 'rgba(22, 163, 74, 0.7)',   // green
+  isDark ? 'rgba(168, 85, 247, 0.7)' : 'rgba(147, 51, 234, 0.7)',  // purple
+  isDark ? 'rgba(239, 68, 68, 0.7)' : 'rgba(220, 38, 38, 0.7)',   // red
+  isDark ? 'rgba(251, 146, 60, 0.7)' : 'rgba(234, 88, 12, 0.7)',  // orange
 ];
 
 interface OutputTextProps {
@@ -21,6 +22,10 @@ interface OutputTextProps {
 }
 
 const OutputText = ({ text, isLoading, onClear, regions = [] }: OutputTextProps) => {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
+  const regionColors = getRegionColors(isDarkMode);
+  
   // We'll maintain our own local editable copy of the text
   const [editableText, setEditableText] = useState<string>(text);
   const [formattedHtml, setFormattedHtml] = useState<string>("");
@@ -140,8 +145,9 @@ const OutputText = ({ text, isLoading, onClear, regions = [] }: OutputTextProps)
       flexDirection: 'column',
       overflow: 'hidden',
     }}>
-      <Typography variant="subtitle2" gutterBottom>
-        Generated text output (editable)
+      <Typography variant="subtitle2" gutterBottom sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+        <SmartToyIcon fontSize="small" color="primary" />
+        Generated Text Output
       </Typography>
       
       {/* Container with fixed height and scrollable content */}
@@ -162,11 +168,17 @@ const OutputText = ({ text, isLoading, onClear, regions = [] }: OutputTextProps)
             borderRadius: 1, 
             overflow: 'hidden',
             display: 'flex',
-            backgroundColor: 'rgba(255, 255, 255, 0.02)',
+            backgroundColor: theme.palette.mode === 'dark' 
+              ? 'rgba(255, 255, 255, 0.02)' 
+              : 'rgba(0, 0, 0, 0.02)',
             transition: 'all 0.2s ease-in-out',
             '&:hover': {
-              backgroundColor: 'rgba(255, 255, 255, 0.03)',
-              borderColor: 'rgba(255, 255, 255, 0.12)',
+              backgroundColor: theme.palette.mode === 'dark' 
+                ? 'rgba(255, 255, 255, 0.03)' 
+                : 'rgba(0, 0, 0, 0.03)',
+              borderColor: theme.palette.mode === 'dark' 
+                ? 'rgba(255, 255, 255, 0.12)' 
+                : 'rgba(0, 0, 0, 0.12)',
             },
           }}
         >
@@ -182,7 +194,13 @@ const OutputText = ({ text, isLoading, onClear, regions = [] }: OutputTextProps)
             }}
           >
             {!editableText && !isLoading ? (
-              <div style={{ color: 'rgba(255, 255, 255, 0.5)' }}>Generated text will appear here...</div>
+              <div style={{ 
+                color: theme.palette.mode === 'dark' 
+                  ? 'rgba(255, 255, 255, 0.5)' 
+                  : 'rgba(0, 0, 0, 0.5)'
+              }}>
+                Generated text will appear here...
+              </div>
             ) : (
               <div 
                 ref={textFieldRef}
@@ -192,7 +210,11 @@ const OutputText = ({ text, isLoading, onClear, regions = [] }: OutputTextProps)
                 style={{
                   outline: 'none',
                   whiteSpace: 'pre-wrap',
-                  color: isLoading && !formattedHtml ? 'rgba(255, 255, 255, 0.5)' : 'inherit'
+                  color: isLoading && !formattedHtml 
+                    ? theme.palette.mode === 'dark' 
+                      ? 'rgba(255, 255, 255, 0.5)' 
+                      : 'rgba(0, 0, 0, 0.5)' 
+                    : 'inherit'
                 }}
               />
             )}
@@ -206,13 +228,15 @@ const OutputText = ({ text, isLoading, onClear, regions = [] }: OutputTextProps)
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
-              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              backgroundColor: theme.palette.mode === 'dark' 
+                ? 'rgba(0, 0, 0, 0.7)' 
+                : 'rgba(255, 255, 255, 0.85)',
               borderRadius: 2,
               padding: 2,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: 'white',
+              color: theme.palette.mode === 'dark' ? 'white' : 'black',
               boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
               zIndex: 10,
             }}>
@@ -220,7 +244,7 @@ const OutputText = ({ text, isLoading, onClear, regions = [] }: OutputTextProps)
                 width: '20px', 
                 height: '20px', 
                 borderRadius: '50%', 
-                borderTop: '2px solid #f59e0b',
+                borderTop: `2px solid ${theme.palette.primary.main}`,
                 borderRight: '2px solid transparent',
                 mr: 1.5,
                 animation: 'spin 1s linear infinite' 
@@ -249,7 +273,11 @@ const OutputText = ({ text, isLoading, onClear, regions = [] }: OutputTextProps)
           disabled={!editableText || isLoading}
           sx={{
             minWidth: '100px',
-            backgroundColor: !editableText ? 'transparent' : 'rgba(245, 158, 11, 0.08)',
+            backgroundColor: !editableText 
+              ? 'transparent' 
+              : theme.palette.mode === 'dark' 
+                ? 'rgba(224, 140, 22, 0.08)' 
+                : 'rgba(217, 119, 6, 0.08)',
           }}
         >
           Export
@@ -263,7 +291,11 @@ const OutputText = ({ text, isLoading, onClear, regions = [] }: OutputTextProps)
           disabled={!editableText || isLoading}
           sx={{
             minWidth: '100px',
-            backgroundColor: !editableText ? 'transparent' : 'rgba(239, 68, 68, 0.08)',
+            backgroundColor: !editableText 
+              ? 'transparent' 
+              : theme.palette.mode === 'dark' 
+                ? 'rgba(239, 68, 68, 0.08)' 
+                : 'rgba(220, 38, 38, 0.08)',
           }}
         >
           Clear

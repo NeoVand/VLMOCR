@@ -47,17 +47,17 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--scrollbar-track);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Improve text area appearance */
@@ -143,12 +143,6 @@ textarea {
   max-height: 100% !important;
 }
 
-/* Custom crop selection colors for dynamic coloring */
-:root {
-  --next-region-color: rgba(245, 158, 11, 0.6);
-  --next-region-border: rgba(245, 158, 11, 0.9);
-}
-
 /* Remove focus outlines and aftereffects on buttons */
 button:focus {
   outline: none !important;
@@ -158,11 +152,6 @@ button:focus {
 /* Remove all outline effects when clicking */
 *:focus {
   outline: none !important;
-}
-
-/* Set background to pure black */
-body, html, #root {
-  background-color: #000000 !important;
 }
 
 /* Remove any divider lines */
@@ -215,12 +204,19 @@ hr {
   -ms-user-select: none;
 }
 
-/* Divider styling */
-.MuiDivider-root {
-  border-color: rgba(255, 255, 255, 0.15) !important;
+/* Theme-aware color and style variables will be set in the theme.ts */
+body.light-mode {
+  --scrollbar-track: rgba(0, 0, 0, 0.05);
+  --scrollbar-thumb: rgba(0, 0, 0, 0.2);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.3);
+  --next-region-color: rgba(217, 119, 6, 0.6);
+  --next-region-border: rgba(217, 119, 6, 0.9);
 }
 
-/* Improve border visibility */
-.border-enhanced {
-  border-color: rgba(255, 255, 255, 0.15) !important;
+body.dark-mode {
+  --scrollbar-track: rgba(255, 255, 255, 0.05);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.3);
+  --next-region-color: rgba(224, 140, 22, 0.6);
+  --next-region-border: rgba(224, 140, 22, 0.9);
 }

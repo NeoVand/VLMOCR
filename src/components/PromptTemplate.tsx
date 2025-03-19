@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Box, Typography, TextField } from '@mui/material';
+import ChatIcon from '@mui/icons-material/Chat';
 
 interface PromptTemplateProps {
   onChange: (template: string) => void;
@@ -30,7 +31,8 @@ const PromptTemplate = ({ onChange }: PromptTemplateProps) => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Typography variant="subtitle2" gutterBottom>
+      <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <ChatIcon fontSize="small" color="primary" />
         Prompt Template
       </Typography>
       <TextField
@@ -45,8 +47,8 @@ const PromptTemplate = ({ onChange }: PromptTemplateProps) => {
           inputRef: textareaRef,
           sx: {
             fontFamily: "'Inter', sans-serif",
-            fontSize: '0.875rem',
-            lineHeight: 1.5,
+            fontSize: '0.8rem',
+            lineHeight: 1.4,
           }
         }}
         fullWidth
