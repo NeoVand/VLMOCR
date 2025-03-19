@@ -1,0 +1,192 @@
+#root {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+/* Remove specific animation and styling related to the template */
+.logo, .logo-spin, .card, .read-the-docs {
+  display: none;
+}
+
+/* App specific styles */
+.ReactCrop__crop-selection {
+  border: 2px solid var(--next-region-border) !important;
+  box-shadow: none !important;
+  background-color: var(--next-region-color) !important;
+  opacity: 0.3 !important;
+}
+
+.ReactCrop__drag-handle::after {
+  background-color: var(--next-region-border) !important;
+}
+
+/* Make the cropper handles smaller and less intrusive */
+.ReactCrop__drag-handle {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+/* Custom styling for the crop component */
+.custom-crop-component {
+  min-height: 100px;
+  min-width: 100px;
+  position: relative !important;
+  display: block !important;
+}
+
+.custom-crop-component:hover {
+  cursor: crosshair;
+}
+
+/* Improve scrollbar appearance */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Improve text area appearance */
+textarea {
+  font-family: 'Roboto Mono', monospace !important;
+  font-size: 0.8rem !important;
+  line-height: 1.5 !important;
+}
+
+/* Animation for pulsing border in selection guide */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+}
+
+/* Sidebar transition */
+.sidebar-enter {
+  width: 0%;
+  opacity: 0;
+}
+.sidebar-enter-active {
+  width: 25%;
+  opacity: 1;
+  transition: width var(--sidebar-transition), opacity var(--sidebar-transition);
+}
+.sidebar-exit {
+  width: 25%;
+  opacity: 1;
+}
+.sidebar-exit-active {
+  width: 0%;
+  opacity: 0;
+  transition: width var(--sidebar-transition), opacity var(--sidebar-transition);
+}
+
+/* Add spinning animation for loading indicator */
+@keyframes spin {
+  0% { 
+    transform: rotate(0deg); 
+  }
+  100% { 
+    transform: rotate(360deg); 
+  }
+}
+
+/* Additional fixes for ReactCrop component */
+.ReactCrop {
+  position: relative !important;
+  display: inline-block !important;
+  cursor: crosshair !important;
+  max-width: 100%;
+}
+
+.ReactCrop img {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+/* Ensure region overlays are above the crop selection but still below controls */
+.region-overlay {
+  z-index: 5 !important;
+  pointer-events: none !important;
+  position: absolute !important;
+}
+
+/* Ensure the crop wrapper has correct positioning */
+.crop-wrapper {
+  position: relative !important;
+  display: inline-block !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+/* Custom crop selection colors for dynamic coloring */
+:root {
+  --next-region-color: rgba(245, 158, 11, 0.6);
+  --next-region-border: rgba(245, 158, 11, 0.9);
+}
+
+/* Remove focus outlines and aftereffects on buttons */
+button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove all outline effects when clicking */
+*:focus {
+  outline: none !important;
+}
+
+/* Set background to pure black */
+body, html, #root {
+  background-color: #000000 !important;
+}
+
+/* Remove any divider lines */
+hr {
+  display: none !important;
+}
+
+/* Add cursor styles for resize handles */
+.resize-handle {
+  cursor: col-resize !important;
+}
+
+/* Style for the resize handle on hover */
+.resize-handle:hover .resize-line {
+  opacity: 0.5 !important;
+}
+
+/* Custom styles for when dragging */
+.dragging {
+  user-select: none;
+  cursor: col-resize !important;
+}
+
+.dragging * {
+  cursor: col-resize !important;
+  pointer-events: none;
+}
