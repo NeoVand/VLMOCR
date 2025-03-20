@@ -815,7 +815,9 @@ function App() {
                   text={generatedText} 
                   isLoading={isGenerating} 
                   onClear={handleTextClear}
+                  onStop={handleStopGeneration}
                   regions={regions}
+                  fullImageData={fullImageData}
                 />
               </Box>
             </Grid>
