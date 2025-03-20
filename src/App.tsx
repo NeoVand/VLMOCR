@@ -46,14 +46,25 @@ function App() {
     document.body.classList.remove('light-mode', 'dark-mode');
     document.body.classList.add(`${mode}-mode`);
     
-    // Also update the region selection colors
+    // Also update the region selection colors in CSS properties
+    // The color is now set in ImageProcessor.tsx based on the current region index
     const root = document.documentElement;
     if (mode === 'dark') {
-      root.style.setProperty('--next-region-color', 'rgba(224, 140, 22, 0.6)');
-      root.style.setProperty('--next-region-border', 'rgba(224, 140, 22, 0.9)');
+      // Default selection colors for dark mode (amber)
+      root.style.setProperty('--selection-color', 'rgba(224, 140, 22, 0.35)');
+      root.style.setProperty('--selection-border', 'rgba(224, 140, 22, 0.7)');
+      
+      // Default CSS variables for backward compatibility
+      root.style.setProperty('--next-region-color', 'rgba(224, 140, 22, 0.35)');
+      root.style.setProperty('--next-region-border', 'rgba(224, 140, 22, 0.7)');
     } else {
-      root.style.setProperty('--next-region-color', 'rgba(217, 119, 6, 0.6)');
-      root.style.setProperty('--next-region-border', 'rgba(217, 119, 6, 0.9)');
+      // Default selection colors for light mode (amber) 
+      root.style.setProperty('--selection-color', 'rgba(217, 119, 6, 0.35)');
+      root.style.setProperty('--selection-border', 'rgba(217, 119, 6, 0.7)');
+      
+      // Default CSS variables for backward compatibility
+      root.style.setProperty('--next-region-color', 'rgba(217, 119, 6, 0.35)');
+      root.style.setProperty('--next-region-border', 'rgba(217, 119, 6, 0.7)');
     }
   }, [mode]);
 
@@ -97,6 +108,41 @@ function App() {
 
   // State for sidebar collapse
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+
+  // Calculate the actual image source for when no regions are selected
+  const imgSrc = currentImage ? URL.createObjectURL(currentImage) : null;
+  
+  // Reference to hold the full image data
+  const [fullImageData, setFullImageData] = useState<string | null>(null);
+  
+  // Convert selected image to proper format for processing when it changes
+  useEffect(() => {
+    const convertImageToDataUrl = async () => {
+      if (currentImage) {
+        try {
+          // Create a FileReader to read the image file
+          const reader = new FileReader();
+          
+          // Set up the onload handler
+          reader.onload = (e) => {
+            if (e.target && typeof e.target.result === 'string') {
+              setFullImageData(e.target.result);
+            }
+          };
+          
+          // Read the image file as a data URL
+          reader.readAsDataURL(currentImage);
+        } catch (error) {
+          console.error('Error converting image to data URL:', error);
+          setFullImageData(null);
+        }
+      } else {
+        setFullImageData(null);
+      }
+    };
+    
+    convertImageToDataUrl();
+  }, [currentImage]);
 
   // Handle resize events
   useEffect(() => {
@@ -289,6 +335,12 @@ function App() {
       setError('Please upload an image first.');
       return;
     }
+    
+    // Check if we have valid image data to process
+    if (!regions.length && !croppedImage && !fullImageData) {
+      setError('Image is not ready for processing. Please try again.');
+      return;
+    }
 
     setIsGenerating(true);
     setGeneratedText(''); // Clear previous text
@@ -297,18 +349,15 @@ function App() {
     try {
       // If there are regions, process them sequentially
       if (regions.length > 0) {
-        // Sort regions from top to bottom, then left to right
-        const sortedRegions = [...regions].sort((a, b) => {
-          const yDiff = a.crop.y - b.crop.y;
-          return Math.abs(yDiff) < 30 ? a.crop.x - b.crop.x : yDiff;
-        });
+        // Use regions in their original order (no sorting)
+        const regionsToProcess = [...regions];
         
-        console.log(`Processing ${sortedRegions.length} regions...`);
+        console.log(`Processing ${regionsToProcess.length} regions...`);
         
         // Process each region sequentially
-        for (let i = 0; i < sortedRegions.length; i++) {
-          const region = sortedRegions[i];
-          console.log(`Processing region ${i + 1}/${sortedRegions.length}`);
+        for (let i = 0; i < regionsToProcess.length; i++) {
+          const region = regionsToProcess[i];
+          console.log(`Processing region ${i + 1}/${regionsToProcess.length}`);
           
           try {
             const response = await ollamaService.generateFromImage({
@@ -342,7 +391,7 @@ function App() {
             }
             
             // Add a newline between regions and the region header for the next region
-            if (i < sortedRegions.length - 1) {
+            if (i < regionsToProcess.length - 1) {
               accumulatedText += '\n\nRegion ' + (i + 2) + ':\n';
               setGeneratedText(accumulatedText);
             }
@@ -365,7 +414,7 @@ function App() {
           await ollamaService.generateFromImage({
             model,
             prompt: promptTemplate,
-            image: croppedImage || imgSrc,
+            image: croppedImage || fullImageData,
             temperature,
             contextLength,
             seed,
@@ -447,9 +496,6 @@ function App() {
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
-
-  // Calculate the actual image source for when no regions are selected
-  const imgSrc = currentImage ? URL.createObjectURL(currentImage) : null;
 
   return (
     <ThemeProvider theme={themeObject}>

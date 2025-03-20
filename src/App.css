@@ -12,14 +12,14 @@
 
 /* App specific styles */
 .ReactCrop__crop-selection {
-  border: 2px solid var(--next-region-border) !important;
+  border: 2px solid var(--selection-border, var(--next-region-border)) !important;
   box-shadow: none !important;
-  background-color: var(--next-region-color) !important;
-  opacity: 0.3 !important;
+  background-color: var(--selection-color, var(--next-region-color)) !important;
+  opacity: 0.7 !important;
 }
 
 .ReactCrop__drag-handle::after {
-  background-color: var(--next-region-border) !important;
+  background-color: var(--selection-border, var(--next-region-border)) !important;
 }
 
 /* Make the cropper handles smaller and less intrusive */

@@ -91,9 +91,12 @@ const ImageProcessor = ({
     const selectionColor = regionColors[nextColorIndex];
     const borderColor = regionBorderColors[nextColorIndex];
     
+    // Update both the new variables and legacy variables
+    document.documentElement.style.setProperty('--selection-color', selectionColor);
+    document.documentElement.style.setProperty('--selection-border', borderColor);
     document.documentElement.style.setProperty('--next-region-color', selectionColor);
     document.documentElement.style.setProperty('--next-region-border', borderColor);
-  }, [regions.length, imgSrc]);
+  }, [regions.length, imgSrc, regionColors, regionBorderColors]);
 
   // Load image when file changes
   useEffect(() => {
