@@ -110,7 +110,6 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
 
   // Calculate the actual image source for when no regions are selected
-  const imgSrc = currentImage ? URL.createObjectURL(currentImage) : null;
   
   // Reference to hold the full image data
   const [fullImageData, setFullImageData] = useState<string | null>(null);
