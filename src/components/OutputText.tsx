@@ -610,16 +610,16 @@ const OutputText = ({ text, isLoading, onClear, onStop, regions = [], fullImageD
       {/* Header */}
       <Box sx={{ mb: 2 }}>
         <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <SmartToyIcon fontSize="small" color="primary" />
-          Generated Text Output
-        </Typography>
+        <SmartToyIcon fontSize="small" color="primary" />
+        Generated Text Output
+      </Typography>
       </Box>
       
       {/* Scrollable content area */}
       <Box 
         ref={scrollContainerRef}
-        sx={{ 
-          flex: 1, 
+          sx={{ 
+            flex: 1,
           minHeight: 0,
           overflow: 'auto',
           mb: 2,
@@ -633,16 +633,16 @@ const OutputText = ({ text, isLoading, onClear, onStop, regions = [], fullImageD
               ? 'rgba(255, 255, 255, 0.2)' 
               : 'rgba(0, 0, 0, 0.2)',
             borderRadius: '3px',
-          },
-        }}
-      >
+            },
+          }}
+        >
         {/* Content */}
         {!isLoading && history.length === 0 ? (
-          <Box sx={{ 
-            display: 'flex',
+            <Box sx={{
+              display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
+              alignItems: 'center',
+              justifyContent: 'center',
             height: '100%',
             color: theme.palette.text.secondary,
             textAlign: 'center',
@@ -658,7 +658,7 @@ const OutputText = ({ text, isLoading, onClear, onStop, regions = [], fullImageD
         ) : (
           <Box sx={{ p: 1 }}>
             {renderHistory()}
-          </Box>
+            </Box>
         )}
       </Box>
       

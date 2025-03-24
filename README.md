@@ -107,15 +107,7 @@ The application communicates with locally running Ollama models to process image
 npm run build
 ```
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- [Ollama](https://ollama.ai/) for providing the backend AI capabilities
-- The React and TypeScript communities for excellent tools and libraries
-
----
+## TODO
+- [ ] async generation job adding and stopping
 
 *VLMOCR is a user interface for Ollama vision models and is not affiliated with Ollama or any language model providers.*
